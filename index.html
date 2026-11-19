@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Howlock Lane House File</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: a surveyor's case file. Cool drafting paper, blue ink for structure,
+   survey red reserved for easements and risks, mono type for every measured value. */
+:root{
+  --paper:#f3f5f7; --sheet:#ffffff; --ink:#17232d; --muted:#586874; --rule:#d3dae0;
+  --blue:#1f5a8e; --blue-soft:#e3edf5; --red:#c0303b; --red-soft:#fae9ea;
+  --good:#2f7a4f; --good-soft:#e4f2e9; --warn:#a86a00; --warn-soft:#fbf0d9;
+  --f-lvp:#c9a57c; --f-carpet:#d9d2c6; --f-tile:#b9cbd6; --f-out:#cfdccb; --f-util:#e3e6e9; --f-room:#eaf0f5;
+  --display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#10171d; --sheet:#182129; --ink:#e6edf2; --muted:#9aaab6; --rule:#2e3b46;
+    --blue:#7db4e3; --blue-soft:#1d3142; --red:#f08088; --red-soft:#3a2024;
+    --good:#7cc79a; --good-soft:#1c3327; --warn:#e3b256; --warn-soft:#3a2f17;
+    --f-lvp:#8a6a48; --f-carpet:#5d574e; --f-tile:#48606e; --f-out:#3d4e3b; --f-util:#343d45; --f-room:#22303b;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#10171d; --sheet:#182129; --ink:#e6edf2; --muted:#9aaab6; --rule:#2e3b46;
+  --blue:#7db4e3; --blue-soft:#1d3142; --red:#f08088; --red-soft:#3a2024;
+  --good:#7cc79a; --good-soft:#1c3327; --warn:#e3b256; --warn-soft:#3a2f17;
+  --f-lvp:#8a6a48; --f-carpet:#5d574e; --f-tile:#48606e; --f-out:#3d4e3b; --f-util:#343d45; --f-room:#22303b;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+h1,h2,h3{font-family:var(--display);font-weight:600;line-height:1.1;text-wrap:balance;margin:0;letter-spacing:.01em}
+h1{font-size:clamp(2rem,5vw,3rem)}
+h2{font-size:1.9rem}
+h3{font-size:1.25rem;font-weight:500}
+p{margin:0;max-width:68ch}
+a{color:var(--blue)}
+.num,td.n,th.n{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+header.top{padding:36px 0 20px}
+.eyebrow{font-family:var(--mono);font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.lede{color:var(--muted);margin-top:10px}
+nav.tabs{position:sticky;top:0;z-index:5;background:var(--paper);border-bottom:1px solid var(--rule)}
+nav.tabs .wrap{display:flex;gap:6px;overflow-x:auto;padding-top:8px;padding-bottom:8px}
+nav.tabs button{font:500 .9rem var(--body);color:var(--ink);background:transparent;border:1px solid var(--rule);border-radius:4px;padding:6px 12px;white-space:nowrap;cursor:pointer}
+nav.tabs button:hover{border-color:var(--blue);color:var(--blue)}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+section{padding:40px 0 8px;scroll-margin-top:56px}
+section>.head{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.src{font-family:var(--mono);font-size:.76rem;color:var(--muted)}
+.sheet{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:20px}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.stack{display:flex;flex-direction:column;gap:14px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.94rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+td.n,th.n{text-align:right}
+tr:last-child td{border-bottom:0}
+.pill{display:inline-block;font:500 .74rem var(--mono);padding:2px 8px;border-radius:3px;white-space:nowrap}
+.pill.red{background:var(--red-soft);color:var(--red)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.good{background:var(--good-soft);color:var(--good)}
+.pill.blue{background:var(--blue-soft);color:var(--blue)}
+.note{font-size:.88rem;color:var(--muted)}
+.flag{border-left:3px solid var(--red);background:var(--red-soft);padding:10px 14px;border-radius:0 4px 4px 0;font-size:.94rem}
+.flag.warn{border-color:var(--warn);background:var(--warn-soft)}
+.flag.blue{border-color:var(--blue);background:var(--blue-soft)}
+figure{margin:0}
+figure img{display:block;width:100%;height:auto;border-radius:3px}
+figcaption{font-size:.86rem;color:var(--muted);margin-top:8px;max-width:75ch}
+svg{display:block;max-width:100%;height:auto}
+svg text{font-family:var(--body);fill:var(--ink)}
+svg .dim{font-family:var(--mono);font-size:11px;fill:var(--muted)}
+svg .lbl{font-size:11px}
+svg .ttl{font-family:var(--display);font-size:17px;font-weight:600}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:4px;overflow:hidden;flex-wrap:wrap}
+.seg button{font:500 .88rem var(--body);background:var(--sheet);color:var(--ink);border:0;border-right:1px solid var(--rule);padding:7px 12px;cursor:pointer}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--blue);color:var(--sheet)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.84rem;color:var(--muted)}
+.legend i{display:inline-block;width:14px;height:14px;border:1px solid var(--rule);vertical-align:-2px;margin-right:6px}
+.sw{display:flex;gap:12px;align-items:flex-start}
+.sw .chip{flex:0 0 56px;height:56px;border-radius:4px;border:1px solid var(--rule)}
+.sw b{display:block;font-weight:600;font-size:.95rem}
+.sw span{display:block;font-size:.86rem;color:var(--muted)}
+.big{font-family:var(--mono);font-size:1.7rem;font-weight:500;font-variant-numeric:tabular-nums}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid var(--rule);font-size:.94rem}
+.kv:last-child{border-bottom:0}
+label.opt{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--rule);font-size:.94rem;cursor:pointer}
+label.opt:last-of-type{border-bottom:0}
+label.opt span.p{margin-left:auto;font-family:var(--mono);white-space:nowrap}
+input[type=range]{width:100%;accent-color:var(--blue)}
+input[type=checkbox],input[type=radio]{accent-color:var(--blue);margin-top:4px}
+.field{display:flex;flex-direction:column;gap:4px;font-size:.9rem}
+.field output{font-family:var(--mono);font-weight:500}
+.bars{display:flex;flex-direction:column;gap:10px}
+.bar{display:grid;grid-template-columns:150px 1fr 80px;gap:10px;align-items:center;font-size:.9rem}
+.bar .track{background:var(--blue-soft);height:18px;border-radius:2px}
+.bar .fill{background:var(--blue);height:18px;border-radius:2px}
+.bar .fill.alt{background:var(--red)}
+.clause h3{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.clause .ref{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.clause p{font-size:.94rem}
+.clause p+p{margin-top:6px}
+.ask{color:var(--blue);font-weight:500}
+ol.q{margin:0;padding:0;list-style:none;display:flex;flex-direction:column}
+ol.q li{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--rule);font-size:.95rem}
+ol.q li:last-child{border-bottom:0}
+ol.q li.done span{color:var(--muted);text-decoration:line-through}
+footer{padding:36px 0 60px;color:var(--muted);font-size:.86rem}
+footer ul{margin:8px 0 0;padding-left:18px}
+@media (max-width:520px){.bar{grid-template-columns:104px 1fr 70px}}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="eyebrow">The Vineyard at Cooper Mountain · Beaverton, OR 97007 · file opened 17 Nov 2026</div>
+    <h1>Howlock Lane House File</h1>
+    <p class="lede">Everything from the documents Nicole and Tricia sent, redrawn so you can study it: the Calistoga floor plan, both lots, the finish package, the upgrade prices, the money and the purchase agreement.</p>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Sections"><div class="wrap" id="nav"></div></nav>
+
+<main class="wrap">
+
+<!-- ============ SNAPSHOT ============ -->
+<section id="snapshot">
+  <div class="head">
+    <h2>The two houses, side by side</h2>
+    <p>The Calistoga is next door to the Navarra. They share a private drive and back onto the same retaining wall.</p>
+  </div>
+  <div class="sheet scroll">
+    <table>
+      <thead><tr><th></th><th>Calistoga, Lot 55</th><th>Navarra, Lot 54 (18072 SW Howlock Ln)</th></tr></thead>
+      <tbody>
+        <tr><td>Price</td><td class="num">$750,000 <span class="pill warn">verbal quote</span></td><td class="num">$699,990 <span class="pill good">listed, cut twice</span></td></tr>
+        <tr><td>House size</td><td class="num">2,851 sq ft</td><td class="num">2,534 sq ft</td></tr>
+        <tr><td>Price per sq ft</td><td class="num">$263</td><td class="num">$276</td></tr>
+        <tr><td>Beds / baths / garage</td><td>4 / 2.5 / 2-car, three storeys</td><td>4 / 2.5 / 2-car</td></tr>
+        <tr><td>Lot area</td><td class="num">3,800 sq ft</td><td class="num">4,487 sq ft</td></tr>
+        <tr><td>Backyard (house to rear line)</td><td class="num">about 24 ft × 40 ft</td><td class="num">about 16.5 ft × 36 ft</td></tr>
+        <tr><td>House footprint</td><td class="num">30 ft × 47 ft</td><td class="num">26 ft × 48 ft</td></tr>
+        <tr><td>Finishes</td><td>Standard Eclectic package. Carpet everywhere except the kitchen, per Tricia. Air conditioning, refrigerator, washer and dryer cost extra.</td><td>Vinyl plank on the main floor, appliances and air conditioning, all seen on your visit. Carpet on the other two levels. The price sheet lists none of this, so get it in writing.</td></tr>
+        <tr><td>Incentive</td><td class="num">$50,000 credit</td><td>Rate promo: 5.25% for 30 years, and 4.25% for the first two years</td></tr>
+        <tr><td>Rate</td><td>5.25% is a target. Not guaranteed for a March closing.</td><td>5.25% in writing from Tricia, subject to credit score and down payment, through Universal Lending</td></tr>
+        <tr><td>Monthly principal and interest<br><span class="note">20% down, 30-year fixed, 5.25%</span></td><td class="num">$3,313</td><td class="num">$3,092</td></tr>
+        <tr><td>Full monthly payment<br><span class="note">with taxes, insurance and $81 HOA</span></td><td class="num">about $4,095 <span class="pill warn">scaled estimate</span></td><td class="num">$3,832 <span class="pill good">lender's figure</span></td></tr>
+        <tr><td>Status</td><td>Under construction, not released. Estimated finish March 2027.</td><td>Move-in ready</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="grid g3" style="margin-top:16px">
+    <div class="flag">The Navarra has the larger lot. The Calistoga has the larger backyard and 317 sq ft more house.</div>
+    <div class="flag">The Navarra already has the $22,000 of extras Nicole priced for the Calistoga: main-floor vinyl plank, air conditioning and appliances.</div>
+    <div class="flag warn">The flooring upgrade is vinyl plank, not hardwood, and covers the main level only.</div>
+    <div class="flag blue">Nothing verbal binds the builder. The $50,000 credit has to be written into an addendum.</div>
+  </div>
+  <div class="sheet stack" style="margin-top:16px">
+    <h3>Like for like: what the Calistoga costs on the Navarra's terms</h3>
+    <div>
+      <div class="kv"><span>Calistoga, quoted price</span><span class="num">$750,000</span></div>
+      <div class="kv"><span>Add main-floor vinyl plank, air conditioning and appliances</span><span class="num">+$22,000</span></div>
+      <div class="kv"><span>Add a two-year buydown like the Navarra's</span><span class="num">+$8,099</span></div>
+      <div class="kv"><span>Less the credit</span><span class="num">−$50,000</span></div>
+      <div class="kv"><span>Add the cost of 5.25% for a March closing</span><span class="num">not yet known</span></div>
+      <div class="kv"><span style="font-weight:600">Calistoga, equipped like the Navarra</span><span class="num" style="font-weight:600">about $730,000 + rate cost</span></div>
+      <div class="kv"><span>Navarra, as it stands</span><span class="num">$699,990</span></div>
+      <div class="kv"><span style="font-weight:600">Premium for 317 sq ft and the bigger backyard</span><span class="num" style="font-weight:600">about $30,000 + rate cost</span></div>
+    </div>
+    <p class="note">If reaching 5.25% in March costs the rough $42,000 estimate, the premium is about $72,000, or roughly $227 for each extra square foot. The lender's Loan Estimate will replace that estimate. The $22,000 is Nicole's figure; the price list adds up to $21,000.</p>
+  </div>
+</section>
+
+<!-- ============ PRICE SHEETS ============ -->
+<section id="prices">
+  <div class="head">
+    <h2>What else the builder is selling</h2>
+    <p>Every available home on the three price sheets Tricia sent. The Calistoga is not on any of them, so its $750,000 and $50,000 are still verbal.</p>
+    <div class="src">Sources: The Reserve price sheet (5 Nov) · The Residences price sheet (10 Nov) · The Townes price sheet (5 Nov) · Tricia's email of 11 Nov</div>
+  </div>
+  <div class="sheet scroll">
+    <table>
+      <thead><tr><th>Section</th><th>Lot</th><th>Address</th><th>Plan</th><th>Design package</th><th class="n">Price</th><th>Included or noted</th></tr></thead>
+      <tbody>
+        <tr><td>Residences</td><td class="num">1033</td><td>18065 SW Monashee Ln</td><td>Navarra TU</td><td>Contemporary</td><td class="n">$669,990</td><td><span class="pill good">Refrigerator, washer/dryer, AC</span> <span class="pill blue">Rate promo</span></td></tr>
+        <tr><td>Residences</td><td class="num">1044</td><td>11800 SW Strobel Rd</td><td>Navarra TU</td><td>Eclectic</td><td class="n">$669,990</td><td>November completion</td></tr>
+        <tr><td>Residences</td><td class="num">1045</td><td>11792 SW Strobel Rd</td><td>Burgundy TU</td><td>Eclectic</td><td class="n">$729,990</td><td>December completion</td></tr>
+        <tr><td><b>Residences</b></td><td class="num"><b>1054</b></td><td><b>18072 SW Howlock Ln</b></td><td><b>Navarra DL</b></td><td><b>Eclectic</b></td><td class="n"><b>$699,990</b></td><td><span class="pill blue">Rate promo</span></td></tr>
+        <tr><td>Reserve</td><td class="num">184</td><td>11670 SW 176th Dr</td><td>Bordeaux TU</td><td>Eclectic, Café appliances</td><td class="n">$779,990</td><td></td></tr>
+        <tr><td>Reserve</td><td class="num">285</td><td>11721 SW Hayrick Terr</td><td>Bordeaux TU</td><td>Contemporary, Café appliances</td><td class="n">$809,990</td><td><span class="pill blue">Rate promo</span></td></tr>
+        <tr><td>Reserve</td><td class="num">215</td><td>11688 SW Hayrick Terr</td><td>Tuscany TU</td><td>Contemporary</td><td class="n">$829,990</td><td><span class="pill blue">Rate promo</span></td></tr>
+        <tr><td>Reserve</td><td class="num">216</td><td>11658 SW Hayrick Terr</td><td>Bordeaux TU</td><td>Classic, Café appliances</td><td class="n">$849,990</td><td></td></tr>
+        <tr><td>Townes</td><td class="num">144</td><td>12130 SW 176th Dr</td><td>Provence</td><td>Eclectic + extended flooring</td><td class="n">$449,990</td><td><span class="pill good">Refrigerator, washer/dryer, AC</span></td></tr>
+        <tr><td>Townes</td><td class="num">173</td><td>11830 SW 176th Dr</td><td>Provence</td><td>Classic</td><td class="n">$469,990</td><td><span class="pill blue">Rate promo</span></td></tr>
+        <tr><td>Townes</td><td class="num">171</td><td>11850 SW 176th Dr</td><td>Rhone</td><td>Classic</td><td class="n">$499,990</td><td><span class="pill blue">Rate promo</span></td></tr>
+        <tr><td>Townes</td><td class="num">189</td><td>11895 SW 176th Dr</td><td>Rhone</td><td>Classic</td><td class="n">$539,990</td><td><span class="pill good">Refrigerator</span> <span class="pill blue">Rate promo</span></td></tr>
+      </tbody>
+    </table>
+    <p class="note" style="margin-top:10px">Marked sold: lots 1039, 1040 and 1041 in The Residences, and 169 and 190 in The Townes. HOA is $81 a month for the houses and $185 for the townhomes. TU is a tuck-under garage plan and DL is a daylight basement plan.</p>
+  </div>
+  <div class="grid g3" style="margin-top:16px">
+    <div class="flag blue"><b>There is precedent.</b> The builder already includes a refrigerator, washer and dryer and air conditioning on two homes. Asking for the same on the Calistoga is asking for something they already do.</div>
+    <div class="flag blue"><b>Lot 1033 is the generous one.</b> At $669,990 it has the Contemporary package, a $20,000 upgrade on the price list, plus appliances, air conditioning and the rate promo.</div>
+    <div class="flag warn"><b>$750,000 sits close to The Reserve.</b> A Bordeaux with Café appliances is $779,990. It is a larger plan with a three-car garage.</div>
+  </div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="sheet stack">
+      <h3>Tricia's payment scenario for the Navarra, 11 November</h3>
+      <div>
+        <div class="kv"><span>Price, 20% down, 30-year fixed at 5.25%</span><span class="num">$699,990</span></div>
+        <div class="kv"><span>Principal and interest</span><span class="num">$3,092.30</span></div>
+        <div class="kv"><span>Homeowner's insurance</span><span class="num">$75.00</span></div>
+        <div class="kv"><span>Property taxes</span><span class="num">$584.00</span></div>
+        <div class="kv"><span>HOA dues</span><span class="num">$81.00</span></div>
+        <div class="kv"><span style="font-weight:600">Total monthly payment</span><span class="num" style="font-weight:600">$3,832.30</span></div>
+      </div>
+      <p class="note">Lender: Universal Lending Corporation. The sheets say loans are subject to credit score and down payment requirements, and that buyers must apply with this lender for final figures.</p>
+    </div>
+    <div class="sheet stack">
+      <h3>The two-year buydown on top</h3>
+      <div>
+        <div class="kv"><span>Rate in years 1 and 2</span><span class="num">4.25%</span></div>
+        <div class="kv"><span>Payment in years 1 and 2</span><span class="num">$2,755</span></div>
+        <div class="kv"><span>Monthly saving against 5.25%</span><span class="num">$337</span></div>
+        <div class="kv"><span>Rate from year 3</span><span class="num">5.25%</span></div>
+        <div class="kv"><span>Cost to the builder</span><span class="num">$8,099</span></div>
+      </div>
+      <div class="flag blue">A temporary buydown is cheap. Lowering the rate by one point for two years costs $8,099 here. That is worth remembering for the Calistoga, where a permanent buydown could use most of the $50,000.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FLOOR PLAN ============ -->
+<section id="plan">
+  <div class="head">
+    <h2>Calistoga floor plan</h2>
+    <p>Three levels, redrawn from the builder's brochure. Switch the view to see which floor finish goes where.</p>
+    <div class="src">Sources: Calistoga Daylight Basement brochure · Calistoga 3014 DL Eclectic +2 flooring diagram</div>
+  </div>
+  <div class="sheet stack">
+    <div class="seg" role="group" aria-label="Floor plan view">
+      <button type="button" data-mode="rooms" aria-pressed="true">Rooms</button>
+      <button type="button" data-mode="base" aria-pressed="false">Standard flooring</button>
+      <button type="button" data-mode="up" aria-pressed="false">With the $8,000 flooring upgrade</button>
+    </div>
+    <figure>
+      <div class="scroll"><div id="planSvg" style="min-width:820px"></div></div>
+      <figcaption id="planCap"></figcaption>
+    </figure>
+    <div class="legend" id="planLegend"></div>
+  </div>
+  <div class="grid g3" style="margin-top:16px">
+    <div class="sheet stack"><h3>What works</h3>
+      <p class="note">The garage is on the kitchen level. Laundry is upstairs with all four bedrooms. The primary suite has two walk-in closets. The bonus room walks out to a patio.</p></div>
+    <div class="sheet stack"><h3>What to check</h3>
+      <p class="note">There is no bathroom on the basement level. There is no bedroom or office on the main level. Three bedrooms share Bath 2. The pantry is small.</p></div>
+    <div class="sheet stack"><h3>Two oddities in the paperwork</h3>
+      <p class="note">The flooring diagram shows the plan mirrored left to right compared with the brochure, so ask which way this house is being built. The plan is numbered 3014 while the brochure says 2,851 sq ft, so ask what the difference is.</p></div>
+  </div>
+</section>
+
+<!-- ============ LOTS ============ -->
+<section id="lots">
+  <div class="head">
+    <h2>The two lots</h2>
+    <p>Both plot plans redrawn to one scale and placed as they sit on the ground. The rear of each lot is at the top, and north points down.</p>
+    <div class="src">Sources: Fox Hollow Phase 1 plot plans · Lot 55 (permit R2025-00257, plan 3014A DL) · Lot 54 (plan 2657B DL)</div>
+  </div>
+  <div class="grid g2">
+    <div class="sheet">
+      <figure>
+        <div id="lotSvg"></div>
+        <figcaption>Lot 55 (Calistoga) is a 40 ft by 95 ft rectangle. Lot 54 (Navarra) is narrower at the back and longer on its west side. Lot 54's front boundary is irregular and is simplified here. Easement extents are as read from the plans and need confirming.</figcaption>
+      </figure>
+      <div class="legend" style="margin-top:12px">
+        <span><i style="background:var(--blue-soft);border-color:var(--blue)"></i>House</span>
+        <span><i style="background:var(--f-util)"></i>Patio or driveway</span>
+        <span><i style="background:var(--red-soft);border-color:var(--red)"></i>Easement</span>
+        <span><i style="background:var(--ink)"></i>Retaining wall</span>
+      </div>
+    </div>
+    <div class="stack">
+      <div class="sheet scroll">
+        <table>
+          <thead><tr><th></th><th class="n">Lot 55</th><th class="n">Lot 54</th></tr></thead>
+          <tbody>
+            <tr><td>Total area</td><td class="n">3,800 sq ft</td><td class="n">4,487 sq ft</td></tr>
+            <tr><td>Hard surface (impervious)</td><td class="n">2,135 sq ft</td><td class="n">2,534 sq ft</td></tr>
+            <tr><td>Width at rear</td><td class="n">40.00 ft</td><td class="n">36.42 ft</td></tr>
+            <tr><td>Side lengths</td><td class="n">95 / 95 ft</td><td class="n">95 / 121 ft</td></tr>
+            <tr><td>House to rear line</td><td class="n">23.91 ft</td><td class="n">16.55 ft</td></tr>
+            <tr><td>Side setbacks</td><td class="n">5 / 5 ft</td><td class="n">4 / 6.42 ft</td></tr>
+            <tr><td>Garage to front line</td><td class="n">about 24 ft</td><td class="n">about 30 ft</td></tr>
+            <tr><td>Main floor elevation</td><td class="n">400.4 ft</td><td class="n">401.2 ft</td></tr>
+            <tr><td>Garage floor elevation</td><td class="n">399.5 ft</td><td class="n">400.3 ft</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="flag"><b>Wall easement.</b> A 20 ft easement follows the retaining wall across the back of both lots, for the benefit of lots 53 to 60 and the HOA's wall maintenance. The Lot 55 plan also shows a 10 ft dimension there, so ask how much of the 20 ft sits on your side.</div>
+      <div class="flag"><b>Shared access easement.</b> A 20 ft easement for lots 52 to 55 runs across the front of both lots, over the driveway area. Ask whether you can park on your own driveway.</div>
+      <div class="flag warn"><b>Lot 54 only.</b> A second wall easement runs down its west side. The house's eave and footing were modified to stay out of it (note 4), and an HOA access easement crosses the front.</div>
+    </div>
+  </div>
+
+  <div class="sheet" style="margin-top:16px">
+    <h3 style="margin-bottom:10px">Lot 55 from the side</h3>
+    <figure>
+      <div class="scroll"><div id="secSvg" style="min-width:640px"></div></div>
+      <figcaption>The lot falls about 10 ft from the private drive to the rear line, which is what lets the basement open onto a patio at ground level. The retaining wall then drops another 10 ft or so behind the lot. Elevations in mono type are printed on the plot plan. The dashed line is the original slope. Storey heights and the basement floor level are schematic.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============ SITE VISIT ============ -->
+<section id="site">
+  <div class="head">
+    <h2>On site, 18 November</h2>
+    <p>The Calistoga as it stood this week, with the finished Navarra beside it.</p>
+    <div class="src">Sources: your site photos · the Calistoga plan on risewellhomes.com</div>
+  </div>
+  <div class="grid g2">
+    <figure class="sheet"><img src="img/basement-patio.jpg" alt="Basement level framed and sheathed, with a concrete patio slab and deck posts."><figcaption>The basement level is framed and sheathed. The patio slab is poured and the deck posts are in.</figcaption></figure>
+    <figure class="sheet"><img src="img/backyard.jpg" alt="Backyard seen from the patio, with a wooden fence along the rear and neighbouring roofs below."><figcaption>The backyard from the patio. The fence runs along the top of the drop, and the houses behind sit well below.</figcaption></figure>
+    <figure class="sheet"><img src="img/street-view.jpg" alt="Main-floor deck under construction seen from the street side."><figcaption>The main-floor deck from the street side, with the first wall panels standing.</figcaption></figure>
+    <figure class="sheet"><img src="img/front-wall.jpg" alt="A sheathed wall panel with three window openings beside the finished neighbouring house."><figcaption>A main-floor wall panel, with the finished Navarra on the right.</figcaption></figure>
+  </div>
+  <div class="grid g3" style="margin-top:16px">
+    <div class="flag blue"><b>Selections are still open.</b> Nothing is closed in yet, so flooring and air conditioning can go in at build stage.</div>
+    <div class="flag"><b>The basement slab is poured.</b> A future bathroom down there needs drain lines under that slab. Ask now whether plumbing was roughed in.</div>
+    <div class="flag blue"><b>The yard is usable.</b> It is fairly level to the rear fence, and nothing overlooks it from behind. The easement strip is the ground along that fence.</div>
+  </div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="sheet stack">
+      <h3>The website shows a different Calistoga</h3>
+      <div class="scroll"><table>
+        <thead><tr><th></th><th>Website plan</th><th>Brochure plan</th></tr></thead>
+        <tbody>
+          <tr><td>Stairs</td><td>Middle of the house</td><td>Along the side wall</td></tr>
+          <tr><td>Powder room</td><td>By the garage, with a mechanical room</td><td>By the front entry</td></tr>
+          <tr><td>Primary closets</td><td>One walk-in</td><td>Two walk-ins</td></tr>
+          <tr><td>Laundry</td><td>Next to the primary bedroom</td><td>Front of the upper floor</td></tr>
+          <tr><td>Basement</td><td>Optional, shown blank</td><td>Bonus room with patio</td></tr>
+          <tr><td>Rear outdoor space</td><td class="num">Porch, 13 ft 10 in × 6 ft 8 in</td><td>Deck over the patio</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">The Lot 55 plot plan and flooring diagram both say plan 3014, which matches the brochure, so the brochure is probably what is being built. Ask for the construction floor plan to be sure.</p>
+    </div>
+    <div class="sheet stack">
+      <h3>The promotion on the builder's website</h3>
+      <div>
+        <div class="kv"><span>Advertised rate</span><span class="num">4.49% (5.38% APR)</span></div>
+        <div class="kv"><span>Fixed for</span><span class="num">first 7 years</span></div>
+        <div class="kv"><span>After year 7</span><span>Adjusts with the market</span></div>
+        <div class="kv"><span>Also advertised</span><span>No-cost refinance</span></div>
+        <div class="kv"><span>$600,000 loan at 4.49%</span><span class="num">$3,037 / mo</span></div>
+        <div class="kv"><span>$600,000 loan at 5.25%</span><span class="num">$3,313 / mo</span></div>
+      </div>
+      <div class="flag warn">This is an adjustable loan. Ask whether it applies to the Calistoga in March and how high the rate can go after year seven.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINISHES ============ -->
+<section id="finishes">
+  <div class="head">
+    <h2>What the standard finish package includes</h2>
+    <p>This is the Eclectic package on the selection sheet. Swatch colours are approximations of the builder's sample board.</p>
+    <div class="src">Source: Insignia design selection sheet, Eclectic (DSGNPKGO11), The Reserve Vineyard 2</div>
+  </div>
+  <div class="grid g3" id="swatches"></div>
+  <div class="sheet scroll" style="margin-top:16px">
+    <table>
+      <thead><tr><th>Item</th><th>Product</th><th>Colour or finish</th><th>Detail</th></tr></thead>
+      <tbody id="specRows"></tbody>
+    </table>
+  </div>
+  <div class="flag warn" style="margin-top:16px">The sheet Nicole sent is the "+2" version. It has the main-level living, dining and great room flooring extension ticked, which is the $8,000 upgrade. The office extension is not ticked, and this plan has no office.</div>
+</section>
+
+<!-- ============ UPGRADES ============ -->
+<section id="upgrades">
+  <div class="head">
+    <h2>Upgrade prices and the $50,000 credit</h2>
+    <p>Tick what you would add and move the buydown slider. The right side shows whether the credit covers it.</p>
+    <div class="src">Source: Reserve Upgrades List. It is headed Bordeaux / Tuscany, so confirm these prices apply to the Calistoga.</div>
+  </div>
+  <div class="grid g2">
+    <div class="sheet stack">
+      <h3>Design package</h3>
+      <div>
+        <label class="opt"><input type="radio" name="pkg" id="pkg0" value="0" checked><span>Eclectic+ (standard)</span><span class="p">$0</span></label>
+        <label class="opt"><input type="radio" name="pkg" id="pkg1" value="15000"><span>Urban+ <span class="note">includes great room vinyl plank</span></span><span class="p">$15,000</span></label>
+        <label class="opt"><input type="radio" name="pkg" id="pkg2" value="20000"><span>Contemporary+ <span class="note">includes great room vinyl plank</span></span><span class="p">$20,000</span></label>
+        <label class="opt"><input type="radio" name="pkg" id="pkg3" value="25000"><span>Classic+ <span class="note">includes great room vinyl plank</span></span><span class="p">$25,000</span></label>
+      </div>
+      <h3>Flooring and comfort</h3>
+      <div>
+        <label class="opt"><input type="checkbox" id="oLvp" data-p="8000" checked><span>Vinyl plank in the great room <span class="note">standard package only</span></span><span class="p">$8,000</span></label>
+        <label class="opt"><input type="checkbox" id="oAc" data-p="7000" checked><span>Air conditioning</span><span class="p">$7,000</span></label>
+      </div>
+      <h3>Appliances</h3>
+      <div>
+        <label class="opt"><input type="checkbox" id="oCafe" data-p="5000"><span>Upgrade cooktop, wall oven, microwave and dishwasher to GE Café <span class="note">GE Profile is included</span></span><span class="p">$5,000</span></label>
+        <label class="opt"><input type="checkbox" id="oFr" data-p="3500"><span>Refrigerator, GE Profile</span><span class="p">$3,500</span></label>
+        <label class="opt"><input type="checkbox" id="oFrC" data-p="5000"><span>Refrigerator, GE Café</span><span class="p">$5,000</span></label>
+        <label class="opt"><input type="checkbox" id="oWd" data-p="2500"><span>Washer and dryer</span><span class="p">$2,500</span></label>
+      </div>
+      <p class="note">Not shown because they don't apply to this plan: office vinyl plank ($1,500) and the tuck-under living room option ($7,000).</p>
+    </div>
+    <div class="stack">
+      <div class="sheet stack">
+        <div class="field">
+          <label for="bd">Cost of buying the rate down to 5.25%</label>
+          <input type="range" id="bd" min="0" max="50000" step="1000" value="42000">
+          <output id="bdOut" for="bd"></output>
+          <span class="note">$42,000 is a rough estimate from a rule of thumb. The real figure comes from the lender's Loan Estimate.</span>
+        </div>
+      </div>
+      <div class="sheet">
+        <div class="kv"><span>Upgrades selected</span><span class="num" id="uTot"></span></div>
+        <div class="kv"><span>Rate buydown</span><span class="num" id="uBd"></span></div>
+        <div class="kv"><span>Credit</span><span class="num">−$50,000</span></div>
+        <div class="kv" style="border-bottom:0;padding-top:14px"><span id="uLbl" style="font-weight:600"></span><span class="big" id="uNet"></span></div>
+        <div id="uBar" style="margin-top:8px"></div>
+      </div>
+      <div class="flag blue">Nicole's email put flooring at about $8,000 and air conditioning plus appliances at $14,000, for $22,000 in total. The price list adds up to $13,000 for refrigerator, washer and dryer and air conditioning, so $1,000 is unexplained.</div>
+      <div class="flag warn">A refrigerator, washer and dryer can be bought retail after closing, usually for less. Flooring and air conditioning are the two that are cheaper and cleaner to do during the build.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MONEY ============ -->
+<section id="money">
+  <div class="head">
+    <h2>The monthly payment</h2>
+    <p>Principal and interest only, on a 30-year fixed loan. Taxes, insurance and the $81 HOA fee come on top.</p>
+  </div>
+  <div class="grid g2">
+    <div class="sheet stack">
+      <div class="seg" role="group" aria-label="Scenario presets" id="presets">
+        <button type="button" data-p="750000,20,5.25" aria-pressed="true">Calistoga at 5.25%</button>
+        <button type="button" data-p="750000,20,7" aria-pressed="false">Calistoga at 7%</button>
+        <button type="button" data-p="700000,20,5.25" aria-pressed="false">Navarra at 5.25%</button>
+      </div>
+      <div class="field"><label for="cPrice">Price</label><input type="range" id="cPrice" min="600000" max="800000" step="5000" value="750000"><output id="cPriceO" for="cPrice"></output></div>
+      <div class="field"><label for="cDown">Down payment</label><input type="range" id="cDown" min="5" max="40" step="1" value="20"><output id="cDownO" for="cDown"></output></div>
+      <div class="field"><label for="cRate">Interest rate</label><input type="range" id="cRate" min="4" max="8" step="0.125" value="5.25"><output id="cRateO" for="cRate"></output></div>
+    </div>
+    <div class="sheet stack">
+      <div><div class="note">Monthly principal and interest</div><div class="big" id="cPI"></div></div>
+      <div>
+        <div class="kv"><span>Loan amount</span><span class="num" id="cLoan"></span></div>
+        <div class="kv"><span>Cash down</span><span class="num" id="cCash"></span></div>
+        <div class="kv"><span>Interest over 30 years</span><span class="num" id="cInt"></span></div>
+        <div class="kv"><span>First month: interest / principal</span><span class="num" id="cSplit"></span></div>
+      </div>
+      <div class="bars" id="cBars"></div>
+    </div>
+  </div>
+
+  <div class="grid g2" style="margin-top:16px">
+    <div class="sheet stack">
+      <h3>Navarra list price, last six weeks</h3>
+      <figure>
+        <div id="histSvg"></div>
+        <figcaption>Two reductions totalling $45,000 on a finished, upgraded house. The first date is approximate. <span class="src">From listing sites, not from Nicole's documents.</span></figcaption>
+      </figure>
+    </div>
+    <div class="sheet stack">
+      <h3>What the rate is worth</h3>
+      <div>
+        <div class="kv"><span>Market 30-year fixed, mid-November 2026</span><span class="num">about 7.0%</span></div>
+        <div class="kv"><span>$600,000 loan at 7.0%</span><span class="num">$3,992 / mo</span></div>
+        <div class="kv"><span>$600,000 loan at 5.25%</span><span class="num">$3,313 / mo</span></div>
+        <div class="kv"><span>Monthly saving</span><span class="num">$679</span></div>
+        <div class="kv"><span>Break-even if the buydown costs $42,000</span><span class="num">about 5 years</span></div>
+      </div>
+      <h3>If you later rent it out</h3>
+      <div>
+        <div class="kv"><span>Estimated rent for this house</span><span class="num">$3,600 to $4,200</span></div>
+        <div class="kv"><span>Carrying cost at 5.25%</span><span class="num">about $4,100</span></div>
+        <div class="kv"><span>Carrying cost at 7.0%</span><span class="num">about $4,770</span></div>
+      </div>
+      <p class="note">Carrying cost adds taxes, insurance and HOA of about $780 a month, scaled up from the lender's Navarra figures. Vacancy, repairs and management are not included. <span class="src">Rent estimate is from web research.</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONTRACT ============ -->
+<section id="contract">
+  <div class="head">
+    <h2>The purchase agreement</h2>
+    <p>A plain-language reading of the builder's 14-page template. This is not legal advice, and a flat-fee attorney review is worth having before you sign.</p>
+    <div class="src">Source: The Vineyard at Cooper Mountain Purchase Agreement and Escrow Instructions · seller TNHC Oregon LLC</div>
+  </div>
+  <div class="sheet">
+    <h3 style="margin-bottom:10px">How the deal moves, and when your deposit is at risk</h3>
+    <figure>
+      <div class="scroll"><div id="timeSvg" style="min-width:980px"></div></div>
+      <figcaption>The $7,500 deposit comes back only if the seller declines the offer or the loan is not approved by the deadline. After loan approval it stays with the seller if you walk away, whatever rates do by March.</figcaption>
+    </figure>
+  </div>
+
+  <div class="grid g2" style="margin-top:16px" id="clauses"></div>
+
+  <div class="sheet" style="margin-top:16px">
+    <h3 style="margin-bottom:10px">What Nicole's email said, 18 November</h3>
+    <div class="scroll"><table>
+      <tbody>
+        <tr><td>Your two proposals</td><td>Tricia will present either to the builder but thinks he is unlikely to accept them as proposed. Neither has actually been presented.</td></tr>
+        <tr><td>Flooring</td><td>There may be some flexibility. About $8,000.</td></tr>
+        <tr><td>Air conditioning and appliances</td><td>Less likely to be approved. Another $14,000, for $22,000 across all three.</td></tr>
+        <tr><td>The $50,000 credit</td><td>Part of it can go toward these upgrades.</td></tr>
+        <tr><td>Earnest money</td><td>$7,500. Refunded only if you are not approved for the loan, which is usually known within 30 days. Nicole advises treating it as non-refundable.</td></tr>
+        <tr><td>Rate guarantee</td><td>None. They cannot guarantee what rates will be closer to March.</td></tr>
+        <tr><td>Exit if completion slips</td><td>None. No refund is tied to the completion date.</td></tr>
+        <tr><td>Upgrades listed by name</td><td>Tricia reviews selections with you once you are under contract.</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============ QUESTIONS ============ -->
+<section id="questions">
+  <div class="head">
+    <h2>Open questions</h2>
+    <p>The eleven questions in your email to Nicole, followed by eleven more that came up while going through the documents. Tick them off as answers arrive. Ticks are saved in this browser only.</p>
+  </div>
+  <div class="grid g2">
+    <div class="sheet"><h3 style="margin-bottom:6px">Sent to Nicole</h3><ol class="q" id="qSent"></ol></div>
+    <div class="sheet"><h3 style="margin-bottom:6px">Found in the documents since</h3><ol class="q" id="qNew"></ol></div>
+  </div>
+</section>
+
+</main>
+
+<footer><div class="wrap">
+  Built from: the Calistoga Daylight Basement brochure, the Reserve Upgrades List, the Calistoga 3014 DL Eclectic +2 selection sheet and flooring diagram, the Fox Hollow Phase 1 plot plans for lots 54 and 55, the Vineyard at Cooper Mountain purchase agreement, Nicole's email of 18 November 2026, Tricia's email of 11 November 2026, the price sheets for The Reserve, The Residences and The Townes, and your site photos of 18 November.
+  <ul>
+    <li><a href="https://lelandnw.com/listing/18072-sw-howlock-ln-beaverton-or-97007/">Navarra listing and price history</a></li>
+    <li><a href="https://www.noradarealestate.com/blog/todays-mortgage-rates-november-11-2026-update/">30-year fixed rate, 11 November 2026</a></li>
+    <li><a href="https://www.rentometer.com/average-rent-in/or/beaverton-or">Beaverton four-bedroom rents</a></li>
+  </ul>
+  <p style="margin-top:10px">Drawings are schematic redraws for study. Do not measure from them.</p>
+</div></footer>
+
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id)};
+var usd=function(n){return (n<0?"−":"")+"$"+Math.abs(Math.round(n)).toLocaleString("en-US")};
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;")}
+
+/* ---------- nav ---------- */
+[["snapshot","Snapshot"],["prices","Price sheets"],["plan","Floor plan"],["lots","The lots"],["site","On site"],["finishes","Finishes"],["upgrades","Upgrades"],["money","Money"],["contract","Contract"],["questions","Open questions"]]
+.forEach(function(s){var b=document.createElement("button");b.type="button";b.textContent=s[1];
+  b.addEventListener("click",function(){$(s[0]).scrollIntoView()});$("nav").appendChild(b)});
+
+/* ---------- floor plan ---------- */
+/* units: feet. x from the left wall, y from the rear wall of the 30 x 47 ft body. t = floor type per mode */
+var LEVELS=[
+ {name:"Basement",rooms:[
+  {x:13.5,y:-8,w:16.5,h:8,l:"Patio",base:"out",up:"out"},
+  {x:0,y:0,w:30,h:18.5,l:"Bonus room",base:"carpet",up:"carpet"},
+  {x:19.2,y:18.5,w:7,h:13.2,l:"Stairs\nup",base:"carpet",up:"carpet"},
+  {x:26.2,y:18.5,w:3.8,h:13.2,l:"Stor.",base:"util",up:"util"},
+  {x:0,y:18.5,w:19.2,h:28.5,l:"Not excavated\n(under garage)",base:"none",up:"none",dash:1},
+  {x:19.2,y:31.7,w:10.8,h:15.3,l:"Not\nexcavated",base:"none",up:"none",dash:1}
+ ]},
+ {name:"Main floor",rooms:[
+  {x:0,y:-8,w:13.4,h:8,l:"Dining",base:"carpet",up:"lvp"},
+  {x:13.4,y:-8,w:16.6,h:8,l:"Deck",base:"out",up:"out"},
+  {x:0,y:0,w:13.4,h:21.2,l:"Kitchen",base:"lvp",up:"lvp",lx:3.6},
+  {x:6.7,y:7.2,w:3.4,h:7.8,l:"",base:"util",up:"util",island:1},
+  {x:13.4,y:0,w:16.6,h:18,l:"Living",base:"carpet",up:"lvp"},
+  {x:13.4,y:18,w:6,h:3.2,l:"WH",base:"util",up:"util"},
+  {x:0,y:21.2,w:19.4,h:21.8,l:"2-car garage",base:"util",up:"util"},
+  {x:19.4,y:18,w:4.2,h:22,l:"Hall",base:"carpet",up:"lvp"},
+  {x:23.6,y:18,w:6.4,h:13,l:"Stairs",base:"carpet",up:"carpet"},
+  {x:23.6,y:31,w:6.4,h:6.5,l:"Powder",base:"lvp",up:"lvp"},
+  {x:23.6,y:37.5,w:6.4,h:2.5,l:"Coats",base:"carpet",up:"lvp"},
+  {x:19.4,y:40,w:10.6,h:7,l:"Entry",base:"carpet",up:"lvp"},
+  {x:19,y:47,w:11,h:6,l:"Porch",base:"out",up:"out"}
+ ]},
+ {name:"Upper floor",rooms:[
+  {x:0,y:-4,w:13.8,h:10.5,l:"Primary bath",base:"tile",up:"tile"},
+  {x:0,y:6.5,w:13.8,h:4.5,l:"Walk-in closet",base:"carpet",up:"carpet"},
+  {x:13.8,y:-4,w:16.2,h:13,l:"Primary\nbedroom",base:"carpet",up:"carpet"},
+  {x:19.6,y:9,w:10.4,h:8.6,l:"Walk-in\ncloset",base:"carpet",up:"carpet"},
+  {x:0,y:11,w:13.8,h:11.2,l:"Bedroom 2",base:"carpet",up:"carpet"},
+  {x:0,y:22.2,w:13.8,h:7,l:"Bath 2",base:"tile",up:"tile"},
+  {x:0,y:29.2,w:13.8,h:2.3,l:"Linen",base:"carpet",up:"carpet"},
+  {x:13.8,y:9,w:5.8,h:26,l:"Hall",base:"carpet",up:"carpet"},
+  {x:19.6,y:17.6,w:10.4,h:10.9,l:"Stairs, open\nto below",base:"carpet",up:"carpet"},
+  {x:19.6,y:28.5,w:10.4,h:6.5,l:"Laundry",base:"lvp",up:"lvp"},
+  {x:0,y:31.5,w:13.8,h:11.5,l:"Bedroom 3",base:"carpet",up:"carpet"},
+  {x:13.8,y:35,w:16.2,h:12.5,l:"Bedroom 4",base:"carpet",up:"carpet"}
+ ]}
+];
+var FILL={lvp:"var(--f-lvp)",carpet:"var(--f-carpet)",tile:"var(--f-tile)",out:"var(--f-out)",util:"var(--f-util)",none:"none",room:"var(--f-room)"};
+var CAP={
+ rooms:"All four bedrooms and the laundry are on the upper floor. The main floor holds the garage, kitchen, dining and living areas. The basement is one large bonus room that opens onto a patio.",
+ base:"Standard package as Tricia described it on the call: carpet everywhere except the kitchen. The two full baths are tile on the selection sheet. The powder room and laundry are shown as hard surface, which is an assumption to confirm.",
+ up:"With the $8,000 extension, vinyl plank covers the whole main floor. The basement, both stairs and the entire upper floor except the baths and laundry stay carpet."
+};
+function drawPlan(mode){
+  var S=8.4,W=30*S,gap=40,left=30,top=40+8*S, svgW=left*2+W*3+gap*2, svgH=top+53*S+26;
+  var o='<svg viewBox="0 0 '+svgW+' '+svgH+'" role="img" aria-label="Calistoga floor plan, three levels: basement bonus room and patio, main floor with garage, kitchen, dining and living, upper floor with four bedrooms, two baths and laundry.">';
+  LEVELS.forEach(function(L,i){
+    var ox=left+i*(W+gap);
+    o+='<text class="ttl" x="'+ox+'" y="22">'+L.name+'</text>';
+    o+='<rect x="'+ox+'" y="'+top+'" width="'+W+'" height="'+(47*S)+'" fill="none" stroke="currentColor" stroke-width="2.4"/>';
+    L.rooms.forEach(function(r){
+      var f=mode==="rooms"?(r.base==="none"?"none":(r.base==="out"?FILL.out:(r.base==="util"?FILL.util:FILL.room))):FILL[r[mode]];
+      var x=ox+r.x*S,y=top+r.y*S,w=r.w*S,h=r.h*S;
+      o+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+h.toFixed(1)+'" fill="'+f+'" stroke="currentColor" stroke-width="'+(r.dash?0.8:1.4)+'"'+(r.dash?' stroke-dasharray="4 4" opacity=".55"':'')+'/>';
+      if(r.l){var lines=r.l.split("\n"),cx=x+(r.lx?r.lx*S:w/2),cy=y+h/2-(lines.length-1)*6.5+4;
+        lines.forEach(function(t,k){o+='<text class="lbl" text-anchor="middle" x="'+cx.toFixed(1)+'" y="'+(cy+k*13).toFixed(1)+'"'+(r.dash?' opacity=".7"':'')+'>'+esc(t)+'</text>'});}
+      if(r.island){o+='<text class="lbl" text-anchor="middle" transform="translate('+(x+w/2+4).toFixed(1)+' '+(y+h/2).toFixed(1)+') rotate(-90)">Island</text>';}
+    });
+    /* body outline 30 x 47 */
+    o+='<text class="dim" text-anchor="middle" x="'+(ox+W/2)+'" y="'+(svgH-6)+'">30 ft wide</text>';
+  });
+  o+='<text class="dim" x="'+(left-8)+'" y="'+(top+47*S/2)+'" transform="rotate(-90 '+(left-8)+' '+(top+47*S/2)+')" text-anchor="middle">47 ft deep</text>';
+  o+='<text class="dim" x="'+left+'" y="36">rear of house ↑</text>';
+  o+='</svg>';
+  $("planSvg").innerHTML=o;
+  $("planCap").textContent=CAP[mode];
+  var lg=mode==="rooms"
+    ? [["room","Indoor room"],["util","Garage, storage, utility"],["out","Outdoor"]]
+    : [["lvp","Vinyl plank"],["carpet","Carpet"],["tile","Tile"],["util","Garage, storage, island"],["out","Outdoor"]];
+  $("planLegend").innerHTML=lg.map(function(a){return '<span><i style="background:'+FILL[a[0]]+'"></i>'+a[1]+'</span>'}).join("");
+  document.querySelectorAll("[data-mode]").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.mode===mode?"true":"false")});
+}
+document.querySelectorAll("[data-mode]").forEach(function(b){b.addEventListener("click",function(){drawPlan(b.dataset.mode)})});
+drawPlan("rooms");
+
+/* ---------- lots ---------- */
+(function(){
+  var S=4.3,ox=70,oy=58; function X(f){return (ox+f*S).toFixed(1)} function Y(f){return (oy+f*S).toFixed(1)}
+  var w=452,h=oy+121*S+60;
+  var o='<svg viewBox="0 0 '+w+' '+h.toFixed(0)+'" role="img" aria-label="Lots 55 and 54 drawn to one scale. Lot 55 is 40 by 95 feet with a 24 foot deep backyard. Lot 54 is 36.4 feet wide with a 16.5 foot deep backyard and extends further toward the front.">';
+  o+='<defs><pattern id="hx" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="7" stroke="var(--red)" stroke-width="1.2" opacity=".55"/></pattern></defs>';
+  var b=40; /* lot 54 x offset in ft */
+  /* easements */
+  o+='<rect x="'+X(0)+'" y="'+Y(0)+'" width="'+(76.42*S)+'" height="'+(20*S)+'" fill="url(#hx)"/>';
+  o+='<rect x="'+X(0)+'" y="'+Y(75)+'" width="'+(40*S)+'" height="'+(20*S)+'" fill="url(#hx)"/>';
+  o+='<polygon points="'+X(b)+','+Y(75)+' '+X(b+36.42)+','+Y(101)+' '+X(b+36.42)+','+Y(121)+' '+X(b)+','+Y(95)+'" fill="url(#hx)"/>';
+  o+='<rect x="'+X(b+30)+'" y="'+Y(20)+'" width="'+(6.42*S)+'" height="'+(81*S)+'" fill="url(#hx)"/>';
+  /* lots */
+  o+='<rect x="'+X(0)+'" y="'+Y(0)+'" width="'+(40*S)+'" height="'+(95*S)+'" fill="none" stroke="currentColor" stroke-width="1.6"/>';
+  o+='<polygon points="'+X(b)+','+Y(0)+' '+X(b+36.42)+','+Y(0)+' '+X(b+36.42)+','+Y(121)+' '+X(b)+','+Y(95)+'" fill="none" stroke="currentColor" stroke-width="1.6"/>';
+  o+='<line x1="'+X(b)+'" y1="'+Y(95)+'" x2="'+X(b+36.42)+'" y2="'+Y(121)+'" stroke="var(--sheet)" stroke-width="2.2"/><line x1="'+X(b)+'" y1="'+Y(95)+'" x2="'+X(b+36.42)+'" y2="'+Y(121)+'" stroke="currentColor" stroke-width="1.6" stroke-dasharray="5 4"/>';
+  /* driveways and patios */
+  o+='<rect x="'+X(6)+'" y="'+Y(70.9)+'" width="'+(16*S)+'" height="'+(24.1*S)+'" fill="var(--f-util)" stroke="currentColor" stroke-width=".8"/>';
+  o+='<polygon points="'+X(b+5)+','+Y(64.55)+' '+X(b+21)+','+Y(64.55)+' '+X(b+21)+','+Y(110)+' '+X(b+5)+','+Y(98.6)+'" fill="var(--f-util)" stroke="currentColor" stroke-width=".8"/>';
+  o+='<rect x="'+X(18.5)+'" y="'+Y(15.9)+'" width="'+(16.5*S)+'" height="'+(8*S)+'" fill="var(--f-util)" stroke="currentColor" stroke-width=".8"/>';
+  o+='<rect x="'+X(b+11)+'" y="'+Y(6.5)+'" width="'+(19*S)+'" height="'+(10*S)+'" fill="var(--f-util)" stroke="currentColor" stroke-width=".8"/>';
+  /* houses */
+  o+='<polygon points="'+X(5)+','+Y(23.91)+' '+X(35)+','+Y(23.91)+' '+X(35)+','+Y(76.8)+' '+X(24)+','+Y(76.8)+' '+X(24)+','+Y(70.91)+' '+X(5)+','+Y(70.91)+'" fill="var(--blue-soft)" stroke="var(--blue)" stroke-width="2"/>';
+  o+='<rect x="'+X(b+4)+'" y="'+Y(16.55)+'" width="'+(26*S)+'" height="'+(48*S)+'" fill="var(--blue-soft)" stroke="var(--blue)" stroke-width="2"/>';
+  /* retaining wall */
+  o+='<line x1="'+X(-2)+'" y1="'+Y(0)+'" x2="'+X(b+36.42)+'" y2="'+Y(0)+'" stroke="currentColor" stroke-width="5"/>';
+  o+='<line x1="'+X(b+36.42)+'" y1="'+Y(0)+'" x2="'+X(b+36.42)+'" y2="'+Y(121)+'" stroke="currentColor" stroke-width="5"/>';
+  /* labels */
+  o+='<text class="ttl" text-anchor="middle" x="'+X(20)+'" y="'+Y(45)+'">LOT 55</text><text class="lbl" text-anchor="middle" x="'+X(20)+'" y="'+(+Y(45)+15)+'">Calistoga</text><text class="dim" text-anchor="middle" x="'+X(20)+'" y="'+(+Y(45)+30)+'">30 × 47 ft</text>';
+  o+='<text class="ttl" text-anchor="middle" x="'+X(b+17)+'" y="'+Y(38)+'">LOT 54</text><text class="lbl" text-anchor="middle" x="'+X(b+17)+'" y="'+(+Y(38)+15)+'">Navarra</text><text class="dim" text-anchor="middle" x="'+X(b+17)+'" y="'+(+Y(38)+30)+'">26 × 48 ft</text>';
+  o+='<text class="lbl" text-anchor="middle" x="'+X(26.7)+'" y="'+(+Y(19.9)+4)+'">Patio</text><text class="lbl" text-anchor="middle" x="'+X(b+20.5)+'" y="'+(+Y(11.5)+4)+'">Patio</text>';
+  o+='<text class="lbl" text-anchor="middle" x="'+X(14)+'" y="'+Y(84)+'">Drive</text><text class="lbl" text-anchor="middle" x="'+X(b+13)+'" y="'+Y(84)+'">Drive</text>';
+  o+='<text class="lbl" text-anchor="middle" x="'+X(29.5)+'" y="'+(+Y(73.9)+4)+'">Porch</text>';
+  /* dims */
+  o+='<text class="dim" text-anchor="middle" x="'+X(20)+'" y="'+(oy-30)+'">40.00 ft</text><text class="dim" text-anchor="middle" x="'+X(b+18.2)+'" y="'+(oy-30)+'">36.42 ft</text>';
+  o+='<text class="dim" text-anchor="middle" x="'+X(38)+'" y="'+(oy-10)+'">Retaining wall · top ≈389.5 ft · base ≈379.7 ft</text>';
+  o+='<text class="dim" text-anchor="middle" transform="translate('+(ox-12)+' '+Y(47.5)+') rotate(-90)">95 ft</text>';
+  o+='<text class="dim" text-anchor="middle" transform="translate('+(+X(b+36.42)+16)+' '+Y(60.5)+') rotate(90)">121 ft</text>';
+  o+='<line x1="'+X(10)+'" y1="'+Y(0)+'" x2="'+X(10)+'" y2="'+Y(23.91)+'" stroke="var(--red)" stroke-width="1"/><text class="dim" x="'+(+X(10)+4)+'" y="'+Y(12.6)+'" style="fill:var(--red)">23.9 ft</text>';
+  o+='<line x1="'+X(b+8.5)+'" y1="'+Y(0)+'" x2="'+X(b+8.5)+'" y2="'+Y(16.55)+'" stroke="var(--red)" stroke-width="1"/><text class="dim" text-anchor="end" x="'+(+X(b+8.5)-4)+'" y="'+Y(9.5)+'" style="fill:var(--red)">16.5 ft</text>';
+  o+='<text class="dim" x="'+X(0)+'" y="'+(+Y(95)+16)+'">Private drive (Tract A)</text>';
+  /* north arrow, pointing down */
+  var nx=w-34,ny=h-70;
+  o+='<line x1="'+nx+'" y1="'+(ny-26)+'" x2="'+nx+'" y2="'+ny+'" stroke="currentColor" stroke-width="1.4"/><polygon points="'+(nx-5)+','+(ny-2)+' '+(nx+5)+','+(ny-2)+' '+nx+','+(ny+9)+'" fill="currentColor"/><text class="dim" text-anchor="middle" x="'+nx+'" y="'+(ny+24)+'">N</text>';
+  o+='</svg>';
+  $("lotSvg").innerHTML=o;
+})();
+
+/* ---------- section through lot 55 ---------- */
+(function(){
+  var S=6,ox=70,base=424; /* x: ft from front lot line toward the rear; elevation in ft */
+  function X(f){return (ox+f*S).toFixed(1)} function Y(e){return (20+(base-e)*S).toFixed(1)}
+  var w=ox+118*S+20,h=20+(base-372)*S+34;
+  var o='<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Side view of lot 55. Ground falls from about 399 feet at the private drive to about 389.5 feet at the rear line, then a retaining wall drops to about 379.7 feet. The basement opens to the backyard at the rear.">';
+  /* ground */
+  o+='<polygon points="'+X(-10)+','+Y(398.9)+' '+X(0)+','+Y(399)+' '+X(24)+','+Y(399.5)+' '+X(52.5)+','+Y(399.5)+' '+X(52.5)+','+Y(390.4)+' '+X(79)+','+Y(390.2)+' '+X(95)+','+Y(389.5)+' '+X(95)+','+Y(379.7)+' '+X(108)+','+Y(379.4)+' '+X(108)+','+Y(372)+' '+X(-10)+','+Y(372)+'" fill="var(--f-out)" stroke="currentColor" stroke-width="1.4"/>';
+  o+='<line x1="'+X(24)+'" y1="'+Y(399.5)+'" x2="'+X(71)+'" y2="'+Y(390.3)+'" stroke="currentColor" stroke-dasharray="4 4" stroke-width="1" opacity=".6"/>';
+  /* house */
+  o+='<rect x="'+X(52.5)+'" y="'+Y(400.4)+'" width="'+(18.5*S)+'" height="'+(10*S)+'" fill="var(--f-room)" stroke="var(--blue)" stroke-width="1.6"/>';
+  o+='<rect x="'+X(24)+'" y="'+Y(410.4)+'" width="'+(47*S)+'" height="'+(10*S)+'" fill="var(--blue-soft)" stroke="var(--blue)" stroke-width="1.6"/>';
+  o+='<rect x="'+X(24)+'" y="'+Y(420.4)+'" width="'+(51*S)+'" height="'+(10*S)+'" fill="var(--blue-soft)" stroke="var(--blue)" stroke-width="1.6"/>';
+  o+='<rect x="'+X(71)+'" y="'+Y(400.9)+'" width="'+(8*S)+'" height="3" fill="var(--blue)"/>';
+  o+='<rect x="'+X(95)+'" y="'+Y(390.4)+'" width="5" height="'+((390.4-379.7)*S)+'" fill="currentColor"/>';
+  /* labels */
+  o+='<text class="lbl" text-anchor="middle" x="'+X(49)+'" y="'+(+Y(415.4)+4)+'">Upper floor</text>';
+  o+='<text class="lbl" text-anchor="middle" x="'+X(38)+'" y="'+(+Y(405.4)+4)+'">Garage and main floor</text>';
+  o+='<text class="lbl" text-anchor="middle" x="'+X(61.7)+'" y="'+(+Y(395.4)+4)+'">Bonus room</text>';
+  o+='<text class="lbl" text-anchor="middle" x="'+X(75)+'" y="'+(+Y(402.6))+'">Deck</text>';
+  o+='<text class="lbl" text-anchor="middle" x="'+X(83)+'" y="'+(+Y(391.6))+'">Patio, backyard</text>';
+  o+='<text class="lbl" text-anchor="middle" x="'+X(11)+'" y="'+(+Y(400.6))+'">Driveway</text>';
+  o+='<text class="dim" text-anchor="end" x="'+(+X(24)-6)+'" y="'+(+Y(404))+'">main floor 400.4</text>';
+  o+='<text class="dim" x="'+X(-10)+'" y="'+(+Y(396))+'">front line ≈399</text>';
+  o+='<text class="dim" x="'+X(26)+'" y="'+(+Y(392.6))+'">garage floor 399.5</text>';
+  o+='<text class="dim" x="'+(+X(95)+10)+'" y="'+(+Y(389.5)+4)+'">top of wall 389.5</text>';
+  o+='<text class="dim" x="'+(+X(95)+10)+'" y="'+(+Y(381))+'">base 379.7</text>';
+  /* depth axis */
+  var ay=h-8;
+  [[0,"front line"],[24,"24 ft"],[71,"71 ft"],[95,"rear line, 95 ft"]].forEach(function(t){o+='<line x1="'+X(t[0])+'" y1="'+(ay-18)+'" x2="'+X(t[0])+'" y2="'+(ay-12)+'" stroke="currentColor"/><text class="dim" text-anchor="middle" x="'+X(t[0])+'" y="'+ay+'">'+t[1]+'</text>'});
+  o+='<line x1="'+X(0)+'" y1="'+(ay-15)+'" x2="'+X(95)+'" y2="'+(ay-15)+'" stroke="currentColor" stroke-width="1"/>';
+  o+='</svg>';
+  $("secSvg").innerHTML=o;
+})();
+
+/* ---------- finishes ---------- */
+var SW=[
+ ["#8f8275","Carpet","Shaw Cannery Peak, Perfect Taupe","7/16 in pad, 8 lb"],
+ ["#8a6a4a","Vinyl plank","Waypointe Plus, Wild Dunes","Listed as laminate on the sheet"],
+ ["#c2bcb1","Bathroom floor tile","Daltile Volume 1.0, Degrees Silver","12 × 24, staggered by a third"],
+ ["#e9e5db","Kitchen countertop","Della Terra quartz, Ivory White honed","2 cm slab, eased edge"],
+ ["#efe9da","Kitchen backsplash","Daltile Mesmerist, Spirit","3 × 6, laid horizontally"],
+ ["#f1efe8","Cabinets, whole house","Shaker doors, Snowbound paint","4 in round bar pulls"],
+ ["#c8c6c0","Primary bath countertop","Della Terra quartz, Fog","4 in quartz splash"],
+ ["#f6f5f0","Secondary bath countertop","MSI quartz, Snow White","4 in quartz splash"],
+ ["#232323","Fixtures and hardware","Matte black throughout","Taps, door hardware, lights"]
+];
+$("swatches").innerHTML=SW.map(function(s){return '<div class="sheet sw"><div class="chip" style="background:'+s[0]+'"></div><div><b>'+s[1]+'</b><span>'+s[2]+'</span><span>'+s[3]+'</span></div></div>'}).join("");
+var SPEC=[
+ ["Carpet","Shaw Cannery Peak","00715 Perfect Taupe","Pad 7/16 in, 8 lb"],
+ ["Vinyl plank (laminate line)","Waypointe Plus NCH02","07089 Wild Dunes","Floor break 1 and 2 ticked, 3 (office) not ticked"],
+ ["Floor tile, primary and secondary bath","Daltile Volume 1.0","Degrees Silver VL71","12 × 24, 1/3 staggered, Oyster Gray grout"],
+ ["Kitchen countertop","AZT Della Terra quartz","Ivory White honed","2 cm, eased edge"],
+ ["Kitchen backsplash","Daltile Mesmerist","Spirit MM30","3 × 6 horizontal, silver satin trim, Bleached Wood grout"],
+ ["Primary bath countertop","AZT Della Terra quartz","Fog","2 cm, 4 in quartz slab splash"],
+ ["Secondary bath countertop","MSI quartz","Snow White","2 cm, 4 in quartz slab splash"],
+ ["Primary bath surround","Daltile Volume 1.0","Degrees Silver VL71","12 × 24 tile, no shower niche"],
+ ["Secondary bath surround","Fiberglass insert","","No tile"],
+ ["Cabinets","Shaker door","Snowbound (painted)","4 in round bar pull, matte black"],
+ ["Door hardware","Kwikset 730HFL SQT","Matte black",""],
+ ["Kitchen faucet","Sleek 7864BL","Matte black",""],
+ ["Bath taps and shower trim","Gibson collection","Matte black","Accessories: Moen Genta"],
+ ["Light fixtures","Zire collection","Matte black","LED disc light at the entry"]
+];
+$("specRows").innerHTML=SPEC.map(function(r){return "<tr><td>"+r[0]+"</td><td>"+r[1]+"</td><td>"+r[2]+"</td><td>"+r[3]+"</td></tr>"}).join("");
+
+/* ---------- upgrades ---------- */
+function upg(){
+  var pkg=+document.querySelector('input[name="pkg"]:checked').value, lvp=$("oLvp");
+  lvp.disabled=pkg>0; if(pkg>0) lvp.checked=false;
+  if($("oFr").checked&&$("oFrC").checked){ (this===$("oFr")?$("oFrC"):$("oFr")).checked=false; }
+  var tot=pkg; ["oLvp","oAc","oCafe","oFr","oFrC","oWd"].forEach(function(id){if($(id).checked) tot+=+$(id).dataset.p});
+  var bd=+$("bd").value, net=tot+bd-50000;
+  $("bdOut").textContent=usd(bd); $("uTot").textContent=usd(tot); $("uBd").textContent=usd(bd);
+  $("uLbl").textContent=net>0?"You pay on top of the credit":"Credit left over";
+  $("uNet").textContent=usd(Math.abs(net)); $("uNet").style.color=net>0?"var(--red)":"var(--good)";
+  var used=Math.min(100,(tot+bd)/50000*100), up=Math.min(used,tot/50000*100);
+  $("uBar").innerHTML='<div style="display:flex;height:14px;background:var(--blue-soft);border-radius:2px;overflow:hidden"><div style="width:'+up.toFixed(1)+'%;background:var(--warn)"></div><div style="width:'+(used-up).toFixed(1)+'%;background:var(--blue)"></div></div><div class="legend" style="margin-top:8px"><span><i style="background:var(--warn)"></i>Upgrades</span><span><i style="background:var(--blue)"></i>Buydown</span><span><i style="background:var(--blue-soft)"></i>Unused credit</span></div>';
+}
+document.querySelectorAll('#upgrades input').forEach(function(i){i.addEventListener("input",upg)});
+upg.call(null);
+
+/* ---------- payment ---------- */
+function pmt(loan,rate){var r=rate/1200,n=360;return loan*r/(1-Math.pow(1+r,-n))}
+function calc(){
+  var p=+$("cPrice").value,d=+$("cDown").value,r=+$("cRate").value,loan=p*(1-d/100),m=pmt(loan,r);
+  $("cPriceO").textContent=usd(p); $("cDownO").textContent=d+"% · "+usd(p*d/100); $("cRateO").textContent=r.toFixed(3).replace(/0$/,"")+"%";
+  $("cPI").textContent=usd(m); $("cLoan").textContent=usd(loan); $("cCash").textContent=usd(p*d/100);
+  $("cInt").textContent=usd(m*360-loan); $("cSplit").textContent=usd(loan*r/1200)+" / "+usd(m-loan*r/1200);
+  var rows=[["This scenario",m,1],["Calistoga, 5.25%",pmt(600000,5.25),0],["Calistoga, 7%",pmt(600000,7),0],["Navarra, 5.25%",pmt(560000,5.25),0]];
+  $("cBars").innerHTML=rows.map(function(x){return '<div class="bar"><span>'+x[0]+'</span><div class="track"><div class="fill'+(x[2]?' alt':'')+'" style="width:'+Math.min(100,x[1]/5000*100).toFixed(1)+'%"></div></div><span class="num" style="text-align:right">'+usd(x[1])+'</span></div>'}).join("")+'<div class="note">Bars run from $0 to $5,000 a month. Reference rows assume 20% down.</div>';
+  var key=p+","+d+","+r;
+  document.querySelectorAll("#presets button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.p===key?"true":"false")});
+}
+["cPrice","cDown","cRate"].forEach(function(id){$(id).addEventListener("input",calc)});
+document.querySelectorAll("#presets button").forEach(function(b){b.addEventListener("click",function(){var v=b.dataset.p.split(",");$("cPrice").value=v[0];$("cDown").value=v[1];$("cRate").value=v[2];calc()})});
+calc();
+
+/* ---------- price history ---------- */
+(function(){
+  var pts=[["early Oct",744990],["15 Oct",719990],["now",699990]],w=460,h=210,l=70,r=30,t=24,b=40,lo=680000,hi=760000;
+  function Y(v){return t+(hi-v)/(hi-lo)*(h-t-b)} var xs=[l,l+(w-l-r)*0.42,w-r];
+  var o='<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Navarra list price fell from $744,990 to $719,990 to $699,990.">';
+  [700000,720000,740000,760000].forEach(function(g){o+='<line x1="'+l+'" x2="'+(w-r)+'" y1="'+Y(g)+'" y2="'+Y(g)+'" stroke="var(--rule)"/><text class="dim" text-anchor="end" x="'+(l-8)+'" y="'+(Y(g)+4)+'">$'+(g/1000)+'K</text>'});
+  var path="M"+xs[0]+","+Y(pts[0][1])+" H"+xs[1]+" V"+Y(pts[1][1])+" H"+(xs[2]-60)+" V"+Y(pts[2][1])+" H"+xs[2];
+  o+='<path d="'+path+' V'+(h-b)+' H'+xs[0]+' Z" fill="var(--blue-soft)"/><path d="'+path+'" fill="none" stroke="var(--blue)" stroke-width="2.2"/>';
+  o+='<circle cx="'+xs[2]+'" cy="'+Y(pts[2][1])+'" r="5" fill="var(--red)"/>';
+  o+='<text class="dim" x="'+xs[0]+'" y="'+(Y(pts[0][1])-8)+'">$744,990</text><text class="dim" x="'+(xs[1]+6)+'" y="'+(Y(pts[1][1])-8)+'">$719,990</text><text class="dim" text-anchor="end" x="'+xs[2]+'" y="'+(Y(pts[2][1])-10)+'">$699,990</text>';
+  o+='<text class="dim" x="'+xs[0]+'" y="'+(h-b+18)+'">early Oct</text><text class="dim" text-anchor="middle" x="'+xs[1]+'" y="'+(h-b+18)+'">mid Oct</text><text class="dim" text-anchor="end" x="'+xs[2]+'" y="'+(h-b+18)+'">18 Nov</text>';
+  o+='</svg>'; $("histSvg").innerHTML=o;
+})();
+
+/* ---------- timeline ---------- */
+(function(){
+  var steps=[["You sign","Offer only.\nDeposit paid.","blue"],["Seller accepts","Within 10 days,\nor refunded.","good"],["Loan application","Within 5 days\nof signing.","blue"],["Loan approval","Deadline on page 1,\nabout 30 days.","warn"],["Build continues","Est. March.\nNo firm date.","blue"],["Closing notice","Seller says\nit is ready.","blue"],["Closing","5 business days\nafter notice.","good"]];
+  var w=1080,h=236,l=60,gap=(w-2*l)/(steps.length-1),y=70,col={blue:"var(--blue)",good:"var(--good)",warn:"var(--warn)"};
+  var o='<svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="Timeline from signing to closing. The deposit is refundable until loan approval and at risk afterwards.">';
+  var x3=l+gap*3;
+  o+='<rect x="'+l+'" y="'+(y-28)+'" width="'+(x3-l)+'" height="12" fill="var(--good-soft)"/><text class="dim" x="'+l+'" y="'+(y-34)+'" style="fill:var(--good)">Deposit refundable if the seller declines or the loan is not approved</text>';
+  o+='<rect x="'+x3+'" y="'+(y-28)+'" width="'+(w-l-x3)+'" height="12" fill="var(--red-soft)"/><text class="dim" text-anchor="end" x="'+(w-l)+'" y="'+(y-34)+'" style="fill:var(--red)">Deposit kept by the seller if you do not close</text>';
+  o+='<line x1="'+l+'" y1="'+y+'" x2="'+(w-l)+'" y2="'+y+'" stroke="currentColor" stroke-width="1.6"/>';
+  steps.forEach(function(s,i){var x=l+gap*i,anchor=i===0?"start":(i===steps.length-1?"end":"middle");
+    o+='<circle cx="'+x+'" cy="'+y+'" r="7" fill="'+col[s[2]]+'" stroke="var(--sheet)" stroke-width="2"/>';
+    o+='<text class="lbl" style="font-weight:600;font-size:12.5px" text-anchor="'+anchor+'" x="'+x+'" y="'+(y+28)+'">'+s[0]+'</text>';
+    s[1].split("\n").forEach(function(t,k){o+='<text class="dim" text-anchor="'+anchor+'" x="'+x+'" y="'+(y+46+k*14)+'">'+t+'</text>'});
+  });
+  o+='<line x1="'+(l+gap)+'" y1="'+(h-38)+'" x2="'+(w-l)+'" y2="'+(h-38)+'" stroke="var(--red)" stroke-width="1.2" stroke-dasharray="5 4"/>';
+  o+='<text class="dim" text-anchor="middle" x="'+((l+gap+w-l)/2)+'" y="'+(h-18)+'" style="fill:var(--red)">Seller has up to 2 years from acceptance to finish and close, longer for unavoidable delays.</text>';
+  o+='<text class="dim" text-anchor="middle" x="'+((l+gap+w-l)/2)+'" y="'+(h-4)+'" style="fill:var(--red)">Only after that can you cancel with a full refund.</text>';
+  o+='</svg>'; $("timeSvg").innerHTML=o;
+})();
+
+/* ---------- clauses ---------- */
+var CL=[
+ ["red","Money","Verbal promises don't count","Buyer certifications 1 to 4, ¶26","No sales agent can bind the seller. Any promise must be in writing and signed by an authorised person at the builder.","Get the $50,000 credit, how it can be used, and any free flooring written into an addendum."],
+ ["red","Rate","No rate guarantee","¶2(b)","Any rate you are quoted is an estimate. You must close at whatever rate the lender charges on the day, and a worse rate is not a reason to cancel.","Ask the lender about an extended rate lock and what it costs."],
+ ["warn","Money","Your loss is capped only if section 7 is initialled","¶7","If both sides initial it, the seller keeps your deposits and that is the end of it. Without the initials, the seller can pursue other remedies. Deposits for upgrades count too.","Initial it, and ask whether upgrades need their own deposit."],
+ ["warn","Money","No appraisal protection","¶2(h)","If the house appraises below the price with upgrades, you pay the difference in cash. You cannot ask for a second appraisal.","Keep upgrades modest, or negotiate a clause for a low appraisal."],
+ ["warn","Money","Deposit refund is narrow","¶2(e), ¶6(c)","The deposit comes back if you cannot get loan approval by the deadline for reasons outside your control. If approval later lapses, you are still bound. Failing to sell a current home counts as your default.","Know your approval deadline before signing."],
+ ["warn","Timing","Two years to finish","¶3(d), ¶6(a), ¶10","The closing date is an estimate and can slip by weeks or months. You can cancel with a refund only if the house is not closed within two years of acceptance.","Ask for a written outside date closer to March."],
+ ["blue","Timing","Five business days to close","¶3(d)","Closing is five business days after the seller's notice. If you cause a delay, the seller may charge $250 a day or cancel.","Have the loan and cash ready well before the notice."],
+ ["blue","Quality","Upgrade prices can change","¶1(b), ¶19","Option prices and availability can change until the final options form is signed, and selections are final once made.","Sign the options form with prices at the same time as the agreement."],
+ ["blue","Quality","One walk-through, no inspector","¶12","You get a single walk-through at a time the seller picks, and it is not a condition of closing. Repairs can be finished after closing. If you disagree on the list, the seller can cancel and refund you.","Ask for the right to bring your own inspector."],
+ ["blue","Quality","Substitutions and approximations","¶9(b), (c), (f)","Square footage, lot boundaries and marketing drawings are approximate. The seller may swap materials and appliances for ones of equal quality without changing the price.","List the items you care about by brand and model."],
+ ["blue","Disputes","Arbitration, no jury","¶22 to ¶24","Disputes before and after closing go to binding arbitration, and both sides waive a jury trial.","Understand this before initialling."],
+ ["blue","Disputes","Two addenda are blank","Pages 13 and 14","The Limited Warranty and the Individual Dispute Resolution Agreement are referenced but not included in this copy.","Ask for both documents before signing."],
+ ["good","Money","You are not tied to their lender","¶2(a), ¶2(d)","Prequalifying with the builder's lender does not oblige you to use it. An outside lender must send the seller weekly status reports.","Get one outside quote to compare. The credit may still be tied to their lender."]
+];
+$("clauses").innerHTML=CL.map(function(c){return '<div class="sheet clause stack"><h3><span>'+c[2]+'</span><span class="pill '+c[0]+'">'+c[1]+'</span></h3><div class="ref">'+c[3]+'</div><p>'+c[4]+'</p><p class="ask">'+c[5]+'</p></div>'}).join("");
+
+/* ---------- questions ---------- */
+var QS=["What can and can't we do in the 20 ft wall easement across the back of Lot 55?","Are hard flooring, air conditioning and full appliances really optional on this home, or can they be included?","Do the Bordeaux / Tuscany upgrade prices apply to the Calistoga, and why $14,000 instead of $13,000?","Do upgrades require a separate deposit, and is it refundable?","Can their lender send a written Loan Estimate for a March closing, with the cost to reach 5.25% and any extended lock?","Does the $50,000 credit depend on using their lender, and are there limits on its use?","Is there any protection if the appraisal comes in below the price?","Will the $50,000 credit and its terms be written into an addendum?","Will the seller initial the liquidated damages paragraph (section 7)?","Can upgrade selections and prices be fixed at signing?","Can we bring our own inspector before closing?"];
+var QN=["How much of the 20 ft wall easement sits on our side of the rear line? The plan also shows a 10 ft dimension.","Does the 20 ft shared access easement cross our driveway, and can we park there?","Which way round is this house being built? The flooring diagram is mirrored compared with the brochure.","The plan is numbered 3014 but the brochure says 2,851 sq ft. What is the difference?","Can we see the Limited Warranty and the Individual Dispute Resolution Agreement? Both pages are blank.","Is plumbing roughed in for a future bathroom on the basement level?","Can the Navarra's vinyl plank, appliances and air conditioning be listed in writing? You saw them, but the price sheet notes none of them.","Lots 1033 and 144 include a refrigerator, washer/dryer and air conditioning. Why not the Calistoga?","What would a two-year temporary buydown cost on the Calistoga for a March closing?","Can we have the construction floor plan for Lot 55? The website plan differs from the brochure.","Does the 4.49% seven-year promotion apply to the Calistoga in March, and how high can the rate go after year seven?"];
+var store={}; try{store=JSON.parse(localStorage.getItem("howlock-q")||"{}")}catch(e){store={}}
+function list(el,arr,pre){el.innerHTML="";arr.forEach(function(q,i){var id=pre+i,li=document.createElement("li"),cb=document.createElement("input"),sp=document.createElement("span");
+  cb.type="checkbox";cb.id=id;cb.checked=!!store[id];cb.setAttribute("aria-label","Answered: "+q);sp.textContent=q;if(cb.checked)li.className="done";
+  cb.addEventListener("change",function(){store[id]=cb.checked;li.className=cb.checked?"done":"";try{localStorage.setItem("howlock-q",JSON.stringify(store))}catch(e){}});
+  li.appendChild(cb);li.appendChild(sp);el.appendChild(li)})}
+list($("qSent"),QS,"s"); list($("qNew"),QN,"n");
+})();
+</script>
+</body>
+</html>
